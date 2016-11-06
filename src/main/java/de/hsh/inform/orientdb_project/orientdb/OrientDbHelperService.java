@@ -3,11 +3,13 @@ package de.hsh.inform.orientdb_project.orientdb;
 import java.io.IOException;
 
 import com.orientechnologies.orient.client.remote.OServerAdmin;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
+import com.tinkerpop.blueprints.impls.orient.OrientConfigurableGraph.THREAD_MODE;
 
 public class OrientDbHelperService {
 
@@ -30,6 +32,8 @@ public class OrientDbHelperService {
 	public OrientGraphFactory getOrientGraphFactory() {
 		if(this.factory == null) {
 			this.factory = new OrientGraphFactory(getDbUri(true), this.user, this.pass);
+			this.factory.declareIntent(new OIntentMassiveInsert());
+			this.factory.setThreadMode(THREAD_MODE.ALWAYS_AUTOSET);
 		}
 		return this.factory;
 	}
@@ -46,18 +50,25 @@ public class OrientDbHelperService {
 		//String storageType = "plocal";
 		String storageType = "memory";
 		// Drop old database and re-create it
+		OServerAdmin admin = null;
 		try {
-			OServerAdmin admin = new OServerAdmin(getDbUri(false));
+			admin = new OServerAdmin(getDbUri(false));
 			admin.connect(this.user, this.pass);
 			admin.dropDatabase(this.db, storageType);
 			admin.createDatabase(this.db, "graph", storageType);
 		} catch (IOException e) {
-			e.printStackTrace();
+			try {
+				admin.createDatabase(this.db, "graph", storageType);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				System.exit(1);
+			}
 		}
 	}
 	
 	public void setupSchema() {
 		OrientGraphNoTx og = this.getOrientGraphFactory().getNoTx();
+		
 		OrientVertexType ethernetFrameType = og.createVertexType("EthernetFrame", "V");
 		ethernetFrameType.createProperty("sourceMac", OType.STRING);
 		ethernetFrameType.createProperty("targetMac", OType.STRING);

@@ -31,6 +31,7 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 	
 	public final void run() throws PcapNativeException, EOFException, TimeoutException, NotOpenException {
 		PcapHandle handle = Pcaps.openOffline(this.filename);
+		long packetCounter = 0;
 		for (;;) {
 			Packet packet = handle.getNextPacketEx();
 			if(packet == null) break;
@@ -38,6 +39,10 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 			int ms = handle.getTimestampMicros();
 			EthernetPacket ether = packet.get(EthernetPacket.class);
 			this.handleEthernetPacket(ether, ts, ms);
+			if(packetCounter % 1000 == 0) {
+				System.out.println(System.currentTimeMillis() + ": " + packetCounter);
+			}
+			packetCounter++;
 		}	
 	}
 	
@@ -57,7 +62,7 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 	public void handleIpV4Packet(IpV4Packet ipv4, long ts, int ms) {
 		IpNumber ipnum = ipv4.getHeader().getProtocol();
 		if (ipv4.getPayload() instanceof FragmentedPacket) {
-			System.out.println("Fragmented IP Packet!");
+			//System.out.println("Fragmented IP Packet!");
 		} else if (ipnum.equals(IpNumber.TCP)) {
 			TcpPacket tcp = ipv4.getPayload().get(TcpPacket.class);
 			this.handleTcpPacket(tcp, ts, ms);

@@ -6,8 +6,9 @@ import java.util.concurrent.TimeoutException;
 import org.pcap4j.core.NotOpenException;
 import org.pcap4j.core.PcapNativeException;
 
+import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
+import de.hsh.inform.orientdb_project.orientdb.LowPerformanceOrientDbNetdataImportService;
 import de.hsh.inform.orientdb_project.orientdb.OrientDbHelperService;
-import de.hsh.inform.orientdb_project.orientdb.OrientDbNetdataImportService;
 
 public class Main {
 
@@ -17,10 +18,11 @@ public class Main {
 		odhs.setupSchema();
 		
 		String filename = "/home/jpt/Temp/tcpdump_2";
-		OrientDbNetdataImportService odbis = new OrientDbNetdataImportService(filename, odhs.getOrientGraphFactory().getNoTx());
+		//AbstractNetdataImportService importService = new DummyImportService(filename);
+		AbstractNetdataImportService importService = new LowPerformanceOrientDbNetdataImportService(filename, odhs.getOrientGraphFactory().getNoTx());
 		try {
-			System.out.println("Begin import of data ...");
-			odbis.run();
+			System.out.println(System.currentTimeMillis() + ": Begin import of data ...");
+			importService.run();
 			System.out.println("Import of data done!");
 		} catch (EOFException | PcapNativeException | TimeoutException | NotOpenException e) {
 			e.printStackTrace();

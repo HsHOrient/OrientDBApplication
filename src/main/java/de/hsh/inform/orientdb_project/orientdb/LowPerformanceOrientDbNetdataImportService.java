@@ -14,12 +14,11 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
-public class OrientDbNetdataImportService extends AbstractNetdataImportService {
+public class LowPerformanceOrientDbNetdataImportService extends AbstractNetdataImportService {
 
 	private OrientGraphNoTx og;
-
 	
-	public OrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
+	public LowPerformanceOrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
 	}
