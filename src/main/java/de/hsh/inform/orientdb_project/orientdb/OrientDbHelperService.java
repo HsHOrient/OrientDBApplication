@@ -121,9 +121,9 @@ public class OrientDbHelperService {
 		tcpConnectionType.createProperty("end", OType.DATETIME);
 		tcpConnectionType.createProperty("sourcePort", OType.INTEGER);
 		tcpConnectionType.createProperty("targetPort", OType.INTEGER);
-		tcpConnectionType.createProperty("volumeSourceToTarget", OType.INTEGER);
-		tcpConnectionType.createProperty("volumeTargetToSource", OType.INTEGER);
-		tcpConnectionType.createProperty("totalVolume", OType.INTEGER);
+		tcpConnectionType.createProperty("volumeSourceToTarget", OType.LONG);
+		tcpConnectionType.createProperty("volumeTargetToSource", OType.LONG);
+		tcpConnectionType.createProperty("totalVolume", OType.LONG);
 		
 		OrientEdgeType isContainedInType = og.createEdgeType("isContainedIn", "E");
 		isContainedInType.setDescription("isContainedIn");

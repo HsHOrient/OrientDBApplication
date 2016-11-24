@@ -43,7 +43,8 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 				System.out.println(System.currentTimeMillis() + ": " + packetCounter);
 			}
 			packetCounter++;
-		}	
+		}
+		this.afterImport();
 	}
 	
 	public void handleEthernetPacket(EthernetPacket ether, long ts, int ms) {

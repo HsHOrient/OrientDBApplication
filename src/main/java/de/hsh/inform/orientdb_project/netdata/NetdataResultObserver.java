@@ -21,4 +21,6 @@ public interface NetdataResultObserver {
 
 	public abstract void handleIpV4Packet(IpV4Packet ipv4, long ts, int ms);
 	
+	public abstract void afterImport();
+	
 }

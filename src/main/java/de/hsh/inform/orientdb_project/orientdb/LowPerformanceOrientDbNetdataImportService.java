@@ -14,6 +14,9 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
+/**
+ * This service is incomplete! DO NOT USE!
+ */
 public class LowPerformanceOrientDbNetdataImportService extends AbstractNetdataImportService {
 
 	private OrientGraphNoTx og;
