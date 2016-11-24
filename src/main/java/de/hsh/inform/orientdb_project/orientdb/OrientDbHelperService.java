@@ -67,6 +67,11 @@ public class OrientDbHelperService {
 	}
 	
 	public void setupSchema() {
+		this.createClasses();
+		this.createClusters();
+	}
+	
+	private void createClasses() {
 		OrientGraphNoTx og = this.getOrientGraphFactory().getNoTx();
 		
 		OrientVertexType ethernetFrameType = og.createVertexType("EthernetFrame", "V");
@@ -109,7 +114,6 @@ public class OrientDbHelperService {
 		
 		OrientVertexType hostType = og.createVertexType("Host", "V");
 		hostType.createProperty("ipAddress", OType.STRING);
-		hostType.createProperty("macAddress", OType.STRING);
 		hostType.createProperty("internal", OType.BOOLEAN);
 		
 		OrientVertexType tcpConnectionType = og.createVertexType("TcpConnection", "V");
@@ -125,9 +129,23 @@ public class OrientDbHelperService {
 		isContainedInType.setDescription("isContainedIn");
 		OrientEdgeType containsType = og.createEdgeType("contains", "E");
 		containsType.setDescription("contains");
-		
-		// Uhm ... this should be okay ... ?
+
 		og.shutdown();
+	}
+
+	private void createClusters() {
+		OServerAdmin admin = null;
+		try {
+			admin = new OServerAdmin(getDbUri(false));
+			admin.connect(this.user, this.pass);
+		} catch (IOException e) {
+			try {
+				admin.createDatabase(this.db, "graph", "plocal");
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				System.exit(1);
+			}
+		}
 	}
 	
 }
