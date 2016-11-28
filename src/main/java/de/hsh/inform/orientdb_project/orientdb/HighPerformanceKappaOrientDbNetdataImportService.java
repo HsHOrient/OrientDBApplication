@@ -15,6 +15,7 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
+import de.hsh.inform.orientdb_project.model.TcpConnection;
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
 public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNetdataImportService {

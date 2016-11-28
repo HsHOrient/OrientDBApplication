@@ -1,4 +1,4 @@
-package de.hsh.inform.orientdb_project.orientdb;
+package de.hsh.inform.orientdb_project.model;
 
 import org.pcap4j.packet.TcpPacket;
 
