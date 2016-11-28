@@ -34,8 +34,6 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	private Vertex tcpPacket;
 	private Vertex icmpPacket;
 	
-	private long packetCounter;
-	
 	public HighPerformanceKappaOrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
@@ -44,15 +42,6 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	}
 	
 	public void handleEthernetPacket(EthernetPacket ether, long ts, int ms) {
-		this.packetCounter++;
-		if(this.packetCounter > 2000) {
-			for(LinkedList<TcpConnection> connList : this.knownTcpConnections.values()) {
-				for(TcpConnection conn : connList) {
-					System.out.println(conn.toString());
-				}
-			}
-			System.exit(0);
-		}
 		// Clean up state vars before processing the next ethernet frame
 		this.ethernetFrame = null;
 		this.arpPacket = null;
@@ -239,7 +228,13 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	
 	public void afterImport() {
 		// TODO: Insert all TcpConnections!
-		System.out.println("Fertig!");
+		System.out.println("All done. Processing collected TcpConnections ...");
+		for(LinkedList<TcpConnection> connList : this.knownTcpConnections.values()) {
+			for(TcpConnection conn : connList) {
+				// TODO
+				System.out.println(conn.toString());
+			}
+		}
 	}
 
 

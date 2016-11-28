@@ -25,13 +25,25 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 
 	private String filename;
 	
+	private long packetCounter;
+	private long packetLimit;
+	
+	private boolean limitedImportRun;
+	
 	public AbstractNetdataImportService(String filename) {
 		this.filename = filename;
+		this.limitedImportRun = false;
+	}
+	
+	public final void partialRun(long packetLimit) throws EOFException, PcapNativeException, TimeoutException, NotOpenException {
+		this.packetLimit = packetLimit;
+		this.limitedImportRun = true;
+		this.run();
 	}
 	
 	public final void run() throws PcapNativeException, EOFException, TimeoutException, NotOpenException {
 		PcapHandle handle = Pcaps.openOffline(this.filename);
-		long packetCounter = 0;
+		this.packetCounter = 0;
 		for (;;) {
 			Packet packet = handle.getNextPacketEx();
 			if(packet == null) break;
@@ -39,10 +51,14 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 			int ms = handle.getTimestampMicros();
 			EthernetPacket ether = packet.get(EthernetPacket.class);
 			this.handleEthernetPacket(ether, ts, ms);
-			if(packetCounter % 1000 == 0) {
-				System.out.println(System.currentTimeMillis() + ": " + packetCounter);
+			if(this.packetCounter % 1000 == 0) {
+				System.out.println(System.currentTimeMillis()/1000L + ": " + this.packetCounter);
 			}
-			packetCounter++;
+			this.packetCounter++;
+			if(this.limitedImportRun && this.packetCounter > this.packetLimit) {
+				System.out.println("Limited import run done. Breaking.");
+				break;
+			}
 		}
 		this.afterImport();
 	}
