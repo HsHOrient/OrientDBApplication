@@ -35,5 +35,8 @@ public class DummyImportService extends AbstractNetdataImportService {
 	
 	public void handleIcmpPacket(IcmpV4CommonPacket icmp, long ts, int ms) {}
 
+	@Override
+	public void afterImport() {}
+
 
 }

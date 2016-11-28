@@ -7,6 +7,8 @@ import org.pcap4j.packet.IpV4Packet;
 import org.pcap4j.packet.TcpPacket;
 import org.pcap4j.packet.UdpPacket;
 
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -14,25 +16,34 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
+/**
+ * Document based insertion of data using specific clusters
+ */
 public class OrientDbNetdataImportService extends AbstractNetdataImportService {
 
 	private OrientGraphNoTx og;
+
+	private ODatabaseDocumentTx rg;
+	
+	private long frameCounter = 0;
 
 	
 	public OrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
+		this.rg = this.og.getRawGraph();
 	}
 	
 	public void handleEthernetPacket(EthernetPacket ether, long ts, int ms) {
-		Vertex ethernetFrame = this.og.addVertex("class:EthernetFrame");
-		ethernetFrame.setProperty("sourceMac", ether.getHeader().getSrcAddr().toString());
-		ethernetFrame.setProperty("targetMac", ether.getHeader().getDstAddr().toString());
-		ethernetFrame.setProperty("rawData", ether.getRawData());
-		ethernetFrame.setProperty("size", ether.getRawData().length);
-		ethernetFrame.setProperty("payloadSize", ether.getRawData().length - ether.getHeader().length());
-		ethernetFrame.setProperty("timestamp", ts);
-		ethernetFrame.setProperty("microseconds", ms);
+		ODocument ethernetFrame = new ODocument("EthernetFrame");
+		ethernetFrame.field("sourceMac", ether.getHeader().getSrcAddr().toString());
+		ethernetFrame.field("targetMac", ether.getHeader().getDstAddr().toString());
+		ethernetFrame.field("rawData", ether.getRawData());
+		ethernetFrame.field("size", ether.getRawData().length);
+		ethernetFrame.field("payloadSize", ether.getRawData().length - ether.getHeader().length());
+		ethernetFrame.field("timestamp", ts);
+		ethernetFrame.field("microseconds", ms);
+		this.rg.save(ethernetFrame, "ethernetFrameCluster");
 		super.handleEthernetPacket(ether, ts, ms);
 	}
 	
@@ -100,6 +111,11 @@ public class OrientDbNetdataImportService extends AbstractNetdataImportService {
 		Vertex ipPacket = ethernetFrame.getEdges(Direction.OUT, "contains").iterator().next().getVertex(Direction.IN);
 		Edge containsEdge = this.og.addEdge("class:contains", ipPacket, icmpPacket, "contains");
 		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", icmpPacket, ipPacket, "isContainedIn");
+	}
+
+	@Override
+	public void afterImport() {
+		// TODO Auto-generated method stub
 	}
 
 

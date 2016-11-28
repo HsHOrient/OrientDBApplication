@@ -104,5 +104,10 @@ public class LowPerformanceOrientDbNetdataImportService extends AbstractNetdataI
 		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", icmpPacket, ipPacket, "isContainedIn");
 	}
 
+	@Override
+	public void afterImport() {
+		// TODO Auto-generated method stub
+	}
+
 
 }
