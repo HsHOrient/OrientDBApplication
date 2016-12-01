@@ -158,8 +158,10 @@ public class OrientDbHelperService {
 		hostType.createProperty("internal", OType.BOOLEAN);
 		
 		OrientVertexType tcpConnectionType = og.createVertexType("TcpConnection", "V");
-		tcpConnectionType.createProperty("start", OType.DATETIME);
-		tcpConnectionType.createProperty("end", OType.DATETIME);
+		tcpConnectionType.createProperty("startTs", OType.LONG);
+		tcpConnectionType.createProperty("startMs", OType.INTEGER);
+		tcpConnectionType.createProperty("endTs", OType.LONG);
+		tcpConnectionType.createProperty("endMs", OType.INTEGER);
 		tcpConnectionType.createProperty("sourcePort", OType.INTEGER);
 		tcpConnectionType.createProperty("targetPort", OType.INTEGER);
 		tcpConnectionType.createProperty("volumeSourceToTarget", OType.LONG);
@@ -171,6 +173,22 @@ public class OrientDbHelperService {
 		OrientEdgeType containsType = og.createEdgeType("contains", "E");
 		containsType.setDescription("contains");
 
+		OrientEdgeType hasSourceHostType = og.createEdgeType("hasSourceHost", "E");
+		hasSourceHostType.setDescription("hasSourceHost");
+		OrientEdgeType hasTargetHostType = og.createEdgeType("hasTargetHost", "E");
+		hasTargetHostType.setDescription("hasTargetHost");
+
+		OrientEdgeType isSourceHostForType = og.createEdgeType("isSourceHostFor", "E");
+		isSourceHostForType.setDescription("isSourceHostFor");
+		OrientEdgeType isTargetHostForType = og.createEdgeType("isTargetHostFor", "E");
+		isTargetHostForType.setDescription("isTargetHostFor");
+		
+		OrientEdgeType belongsToTcpConnectionType = og.createEdgeType("belongsToTcpConnection", "E");
+		belongsToTcpConnectionType.setDescription("belongsToTcpConnection");
+		
+		OrientEdgeType hasRelatedTcpPacketType = og.createEdgeType("hasRelatedTcpPacket", "E");
+		hasRelatedTcpPacketType.setDescription("hasRelatedTcpPacket");
+		
 		og.shutdown();
 	}
 

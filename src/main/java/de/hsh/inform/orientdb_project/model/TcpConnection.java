@@ -1,6 +1,11 @@
 package de.hsh.inform.orientdb_project.model;
 
+import java.util.LinkedList;
+
 import org.pcap4j.packet.TcpPacket;
+
+import com.tinkerpop.blueprints.Vertex;
+
 
 public class TcpConnection {
 	
@@ -19,6 +24,8 @@ public class TcpConnection {
 	public long volumeSourceToTarget;
 	public long volumeTargetToSource;
 
+	public LinkedList<Vertex> knownTcpPacketVertices;
+	
 	
 	public TcpConnection(TcpPacket tcp, String sourceIp, String targetIp, long ts, int ms) {
 		this.setStart(ts, ms);
@@ -27,6 +34,7 @@ public class TcpConnection {
 		this.sourcePort = tcp.getHeader().getSrcPort().valueAsInt();
 		this.targetIp = targetIp;
 		this.targetPort = tcp.getHeader().getDstPort().valueAsInt();
+		this.knownTcpPacketVertices = new LinkedList<Vertex>();
 	}
 
 	public void setStart(long ts, int ms) {
@@ -68,6 +76,27 @@ public class TcpConnection {
 		sb.append(" -- ");
 		sb.append(this.getTotalVolume());
 		return sb.toString();
+	}
+	
+	public void addKnownTcpPacketVertex(Vertex tcpPacketVertex) {
+		this.knownTcpPacketVertices.add(tcpPacketVertex);
+	}
+
+	public Object[] getArguments() {
+		Object[] arguments = {
+				"startTs", this.startTs,
+				"startMs", this.startMs,
+				"endTs", this.endTs,
+				"endMs", this.endMs,
+				"sourceIp", this.sourceIp,
+				"sourcePort", this.sourcePort,
+				"targetIp", this.targetIp,
+				"targetPort", this.targetPort,
+				"volumeSourceToTarget", this.volumeSourceToTarget,
+				"volumeTargetToSource", this.volumeTargetToSource,
+				"totalVolume", this.getTotalVolume(),
+			};
+		return arguments;
 	}
 
 }

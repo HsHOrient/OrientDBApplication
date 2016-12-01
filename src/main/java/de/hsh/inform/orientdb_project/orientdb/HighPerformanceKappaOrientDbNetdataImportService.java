@@ -120,17 +120,20 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.tcpPacket, this.ipPacket, "isContainedIn");
 		// Track tcp connections
 		TcpConnection tcpConnection = this.getTcpConnectionFor(tcp);
-		// If connection exists and still "up to date" aka time difference < 1s
-		if(tcpConnection != null && (ts - tcpConnection.endTs <= 1)) {
-			// Update tcpConnection data
-			if(tcpConnection.sourceIp.equals(this.ipPacket.getProperty("sourceIp"))) {
-				// SourceIp -> TargetIp
-				tcpConnection.addVolumeSourceToTarget(tcp.getRawData().length - tcp.getHeader().length());
-			} else {
-				// TargetIp -> SourceIp
-				tcpConnection.addVolumeTargetToSource(tcp.getRawData().length - tcp.getHeader().length());
+		// If connection exists ...
+		if(tcpConnection != null) {
+			// ... and still "up to date" aka time difference < 2s
+			if(ts - tcpConnection.endTs < 2) {
+				// Update tcpConnection data
+				if(tcpConnection.sourceIp.equals(this.ipPacket.getProperty("sourceIp"))) {
+					// SourceIp -> TargetIp
+					tcpConnection.addVolumeSourceToTarget(tcp.getRawData().length - tcp.getHeader().length());
+				} else {
+					// TargetIp -> SourceIp
+					tcpConnection.addVolumeTargetToSource(tcp.getRawData().length - tcp.getHeader().length());
+				}
+				tcpConnection.setEnd(ts, ms);
 			}
-			tcpConnection.setEnd(ts, ms);
 		} else {
 			// Else create a new one and add it to the list.
 			String sourceIp = this.ipPacket.getProperty("sourceIp");
@@ -138,7 +141,8 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 			tcpConnection = new TcpConnection(tcp, sourceIp, targetIp, ts, ms);
 			this.addKnownTcpConnectionFor(tcpConnection, tcp);
 		}
-		
+		// Remember tcpPacketVertex in tcpConnection for later edges
+		tcpConnection.addKnownTcpPacketVertex(this.tcpPacket);
 	}
 	
 	public void handleIcmpPacket(IcmpV4CommonPacket icmp, long ts, int ms) {
@@ -228,14 +232,29 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	}
 	
 	public void afterImport() {
-		// TODO: Insert all TcpConnections!
+		// TODO: Link TcpConnections up with their tcpPackets!
 		System.out.println("All done. Processing collected TcpConnections ...");
 		for(LinkedList<TcpConnection> connList : this.knownTcpConnections.values()) {
 			for(TcpConnection conn : connList) {
-				// TODO
-				System.out.println(conn.toString());
+				Vertex currentTcpConnection = this.og.addVertex("class:TcpConnection", conn.getArguments());
+				// Look up already created source and target host vertices
+				Vertex sourceHost = this.knownHosts.get(conn.sourceIp);
+				Vertex targetHost = this.knownHosts.get(conn.targetIp);
+				// Link them up with the tcpConnection
+				// class, from, to, label
+				Edge hasSourceHost = this.og.addEdge("class:hasSourceHost", currentTcpConnection, sourceHost, "hasSourceHost");
+				Edge hasTargetHost = this.og.addEdge("class:hasTargetHost", currentTcpConnection, targetHost, "hasTargetHost");
+
+				Edge isSourceHostFor = this.og.addEdge("class:isSourceHostFor", sourceHost, currentTcpConnection, "isSourceHostFor");
+				Edge isTargetHostFor = this.og.addEdge("class:isTargetHostFor", targetHost, currentTcpConnection, "isTargetHostFor");
+				// Now link it up to all related tcpPackets
+				for(Vertex tcpPacketVertex : conn.knownTcpPacketVertices) {
+					Edge hasRelatedTcpPacket = this.og.addEdge("class:hasRelatedTcpPacket", currentTcpConnection, tcpPacketVertex, "hasRelatedTcpPacket");
+					Edge belongsToTcpConnection = this.og.addEdge("class:belongsToTcpConnection", tcpPacketVertex, currentTcpConnection, "belongsToTcpConnection");
+				}
 			}
 		}
+		System.out.println("Done importing TcpConnections. End of afterImport() routine.");
 	}
 
 
