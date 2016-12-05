@@ -9,7 +9,7 @@ import org.pcap4j.core.PcapNativeException;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
-import de.hsh.inform.orientdb_project.orientdb.HighPerformanceKappaOrientDbNetdataImportService;
+import de.hsh.inform.orientdb_project.orientdb.NodeBasedImportService;
 import de.hsh.inform.orientdb_project.orientdb.OrientDbHelperService;
 
 public class Main {
@@ -28,7 +28,7 @@ public class Main {
 		
 		//AbstractNetdataImportService importService = new DummyImportService(filename);
 		//AbstractNetdataImportService importService = new LowPerformanceOrientDbNetdataImportService(filename, ogf);
-		AbstractNetdataImportService importService = new HighPerformanceKappaOrientDbNetdataImportService(filename, ogf);
+		AbstractNetdataImportService importService = new NodeBasedImportService(filename, ogf);
 		
 		// Go go gadget import service!
 		try {

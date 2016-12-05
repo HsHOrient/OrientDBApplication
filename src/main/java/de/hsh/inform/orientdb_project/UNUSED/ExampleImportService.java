@@ -1,4 +1,4 @@
-package de.hsh.inform.orientdb_project.orientdb;
+package de.hsh.inform.orientdb_project.UNUSED;
 
 import org.pcap4j.packet.ArpPacket;
 import org.pcap4j.packet.EthernetPacket;
@@ -17,11 +17,11 @@ import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 /**
  * This service is incomplete! DO NOT USE!
  */
-public class LowPerformanceOrientDbNetdataImportService extends AbstractNetdataImportService {
+public class ExampleImportService extends AbstractNetdataImportService {
 
 	private OrientGraphNoTx og;
 	
-	public LowPerformanceOrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
+	public ExampleImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
 	}

@@ -25,7 +25,7 @@ import de.hsh.inform.orientdb_project.model.TcpPacketModel;
 import de.hsh.inform.orientdb_project.model.UdpPacketModel;
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
-public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNetdataImportService {
+public class NodeBasedImportService extends AbstractNetdataImportService {
 
 	private OrientGraphNoTx og;
 	
@@ -51,7 +51,7 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	private Vertex tcpPacketVertex;
 	private Vertex icmpPacketVertex;
 	
-	public HighPerformanceKappaOrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
+	public NodeBasedImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
 		this.knownHosts = new HashMap<String, Vertex>();

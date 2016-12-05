@@ -1,4 +1,4 @@
-package de.hsh.inform.orientdb_project.orientdb;
+package de.hsh.inform.orientdb_project.UNUSED;
 
 import java.util.HashMap;
 import java.util.Map;

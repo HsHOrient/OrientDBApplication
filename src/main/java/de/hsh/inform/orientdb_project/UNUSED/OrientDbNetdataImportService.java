@@ -1,4 +1,4 @@
-package de.hsh.inform.orientdb_project.orientdb;
+package de.hsh.inform.orientdb_project.UNUSED;
 
 import org.pcap4j.packet.ArpPacket;
 import org.pcap4j.packet.EthernetPacket;
