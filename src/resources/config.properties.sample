@@ -1,0 +1,9 @@
+#OrientDb config settings
+dbuser=root
+dbpass=root
+dbname=root
+dbhost=127.0.0.1
+filename=/home/jpt/Temp/tcpdump_2
+limitedImport=true
+importLimit=10000
+

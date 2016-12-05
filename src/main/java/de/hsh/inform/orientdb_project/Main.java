@@ -11,13 +11,15 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 import de.hsh.inform.orientdb_project.orientdb.NodeBasedImportService;
 import de.hsh.inform.orientdb_project.orientdb.OrientDbHelperService;
+import de.hsh.inform.orientdb_project.util.ConfigPropertiesReader;
 
 public class Main {
 
 	public static void main(String[] args) {
-		// TODO: Make this configurable or easy to exchange.
-		String filename = "/home/jpt/Temp/tcpdump_2";
-		OrientDbHelperService odhs = new OrientDbHelperService("192.168.0.110", "hshtest", "root", "root");
+		ConfigPropertiesReader config = new ConfigPropertiesReader();
+		String filename = config.filename;
+		OrientDbHelperService odhs = new OrientDbHelperService(config.dbhost, config.dbname, config.dbuser, config.dbpass);
+		System.out.println("Using database: " + odhs.getDbUri(true));
 
 		// Clean up existing database and set up schema from scratch
 		odhs.cleanUpServer();
@@ -26,8 +28,7 @@ public class Main {
 		// Get "handle" for database to pass to import service
 		OrientGraphNoTx ogf = odhs.getOrientGraphNoTx();
 		
-		//AbstractNetdataImportService importService = new DummyImportService(filename);
-		//AbstractNetdataImportService importService = new LowPerformanceOrientDbNetdataImportService(filename, ogf);
+		//AbstractNetdataImportService importService = new DummyImportService(filename); // Only for comparison reasons
 		AbstractNetdataImportService importService = new NodeBasedImportService(filename, ogf);
 		
 		// Go go gadget import service!
@@ -38,6 +39,7 @@ public class Main {
 		} catch (EOFException | PcapNativeException | TimeoutException | NotOpenException e) {
 			e.printStackTrace();
 		}
+		
 		// Done
 		odhs.close();
 		System.out.println(System.currentTimeMillis()/1000L + ": End of program.");
