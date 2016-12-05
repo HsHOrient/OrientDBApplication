@@ -1,14 +1,12 @@
 package de.hsh.inform.orientdb_project.model;
 
-import java.net.Inet4Address;
-
 import org.pcap4j.packet.IpV4Packet;
 
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
-public class Ipv4PacketModel {
+public class IpPacketModel {
 
 	public long ts;
 	public int ms;
@@ -30,14 +28,13 @@ public class Ipv4PacketModel {
 		ipPacketType.createProperty("payloadSize", OType.INTEGER);		
 	}
 	
-	public Ipv4PacketModel(IpV4Packet ipv4, Inet4Address sourceIp, Inet4Address targetIp, long ts, int ms) {
+	public IpPacketModel(IpV4Packet ipv4, long ts, int ms) {
 		this.ts = ts;
 		this.ms = ms;
-		this.sourceIp = sourceIp.toString().split("/")[1];
-		this.targetIp = targetIp.toString().split("/")[1];
+		this.sourceIp = ipv4.getHeader().getSrcAddr().toString().split("/")[1];
+		this.targetIp = ipv4.getHeader().getDstAddr().toString().split("/")[1];
 		this.size = ipv4.getRawData().length;
 		this.payloadSize = ipv4.getRawData().length - ipv4.getHeader().length();
-		
 	}
 	
 	public Object[] getArguments() {

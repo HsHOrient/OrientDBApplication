@@ -19,7 +19,7 @@ import de.hsh.inform.orientdb_project.model.ArpPacketModel;
 import de.hsh.inform.orientdb_project.model.EthernetFrameModel;
 import de.hsh.inform.orientdb_project.model.HostModel;
 import de.hsh.inform.orientdb_project.model.IcmpPacketModel;
-import de.hsh.inform.orientdb_project.model.Ipv4PacketModel;
+import de.hsh.inform.orientdb_project.model.IpPacketModel;
 import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
 import de.hsh.inform.orientdb_project.model.TcpPacketModel;
 import de.hsh.inform.orientdb_project.model.UdpPacketModel;
@@ -38,7 +38,7 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 	// References to already created model instances (these are reseted before processing a new ethernetFrame)
 	private EthernetFrameModel ethernetFrameModel;
 	private ArpPacketModel arpPacketModel;
-	private Ipv4PacketModel ipv4PacketModel;
+	private IpPacketModel ipPacketModel;
 	private TcpPacketModel tcpPacketModel;
 	private UdpPacketModel udpPacketModel;
 	private IcmpPacketModel icmpPacketModel;
@@ -69,7 +69,7 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 		// Also clean model instances
 		this.ethernetFrameModel = null;
 		this.arpPacketModel = null;
-		this.ipv4PacketModel = null;
+		this.ipPacketModel = null;
 		this.tcpPacketModel = null;
 		this.udpPacketModel = null;
 		this.icmpPacketModel = null;
@@ -88,13 +88,11 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 	}
 	
 	public void handleIpV4Packet(IpV4Packet ipv4, long ts, int ms) {
-		Inet4Address sourceIp = ipv4.getHeader().getSrcAddr();
-		Inet4Address targetIp = ipv4.getHeader().getDstAddr();
+		this.ipPacketModel = new IpPacketModel(ipv4, ts, ms);
+		this.ipPacketVertex = this.og.addVertex("class:IpPacket", this.ipPacketModel.getArguments());
 		// Add hosts to database if new
-		this.addHostIfNew(sourceIp);
-		this.addHostIfNew(targetIp);
-		this.ipv4PacketModel = new Ipv4PacketModel(ipv4, sourceIp, targetIp, ts, ms);
-		this.ipPacketVertex = this.og.addVertex("class:IpPacket", this.ipv4PacketModel.getArguments());
+		this.addHostIfNew(ipv4.getHeader().getSrcAddr());
+		this.addHostIfNew(ipv4.getHeader().getDstAddr());
 		// Wire up to its ethernet frame
 		Edge containsEdge = this.og.addEdge("class:contains", this.ethernetFrameVertex, this.ipPacketVertex, "contains");
 		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.ipPacketVertex, this.ethernetFrameVertex, "isContainedIn");
@@ -119,7 +117,7 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 		TcpConnectionModel tcpConnection = this.getTcpConnectionFor(tcp);
 		if(tcpConnection != null) { // If connection exists ...
 			if(ts - tcpConnection.endTs < 2) { // ... and still "up to date" aka time difference < 2s
-				if(tcpConnection.sourceIp.equals(this.ipv4PacketModel.sourceIp)) {
+				if(tcpConnection.sourceIp.equals(this.ipPacketModel.sourceIp)) {
 					// Update connection data in direction SourceIp -> TargetIp
 					tcpConnection.addVolumeSourceToTarget(this.tcpPacketModel.payloadSize);
 				} else {

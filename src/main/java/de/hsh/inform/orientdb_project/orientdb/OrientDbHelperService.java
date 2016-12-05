@@ -4,18 +4,16 @@ import java.io.IOException;
 
 import com.orientechnologies.orient.client.remote.OServerAdmin;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientConfigurableGraph.THREAD_MODE;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
-import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 import de.hsh.inform.orientdb_project.model.ArpPacketModel;
 import de.hsh.inform.orientdb_project.model.EthernetFrameModel;
 import de.hsh.inform.orientdb_project.model.HostModel;
 import de.hsh.inform.orientdb_project.model.IcmpPacketModel;
-import de.hsh.inform.orientdb_project.model.Ipv4PacketModel;
+import de.hsh.inform.orientdb_project.model.IpPacketModel;
 import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
 import de.hsh.inform.orientdb_project.model.TcpPacketModel;
 import de.hsh.inform.orientdb_project.model.UdpPacketModel;
@@ -127,7 +125,7 @@ public class OrientDbHelperService {
 		// These are the vertex types used in our model
 		EthernetFrameModel.createType(og);
 		ArpPacketModel.createType(og);
-		Ipv4PacketModel.createType(og);
+		IpPacketModel.createType(og);
 		UdpPacketModel.createType(og);
 		TcpPacketModel.createType(og);
 		IcmpPacketModel.createType(og);
