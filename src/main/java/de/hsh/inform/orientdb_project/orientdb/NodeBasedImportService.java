@@ -217,7 +217,7 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 	}
 	
 	public void afterImport() {
-		System.out.println("All done. Processing collected TcpConnections ...");
+		System.out.println(System.currentTimeMillis()/1000L + ": All done. Processing collected TcpConnections ...");
 		for(LinkedList<TcpConnectionModel> connList : this.knownTcpConnections.values()) {
 			for(TcpConnectionModel conn : connList) {
 				Vertex currentTcpConnection = this.og.addVertex("class:TcpConnection", conn.getArguments());
@@ -238,7 +238,7 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 				}
 			}
 		}
-		System.out.println("Done importing TcpConnections. End of afterImport() routine.");
+		System.out.println(System.currentTimeMillis()/1000L + ": Done importing TcpConnections. End of afterImport() routine.");
 	}
 
 

@@ -56,11 +56,13 @@ public abstract class AbstractNetdataImportService implements NetdataResultObser
 			}
 			this.packetCounter++;
 			if(this.limitedImportRun && this.packetCounter > this.packetLimit) {
-				System.out.println("Limited import run done. Breaking.");
+				System.out.println(System.currentTimeMillis()/1000L + ": Limited import run done. Breaking.");
 				break;
 			}
 		}
+		System.out.println(System.currentTimeMillis()/1000L + ": Main import done, executing afterImport() ...");
 		this.afterImport();
+		System.out.println(System.currentTimeMillis()/1000L + ": Call of afterImport() returned!");
 	}
 	
 	public void handleEthernetPacket(EthernetPacket ether, long ts, int ms) {

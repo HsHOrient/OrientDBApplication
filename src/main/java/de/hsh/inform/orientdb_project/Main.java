@@ -33,14 +33,14 @@ public class Main {
 		// Go go gadget import service!
 		try {
 			System.out.println(System.currentTimeMillis()/1000L + ": Begin import of data ...");
-			importService.partialRun(12000);
-			System.out.println("Import of data done!");
+			importService.partialRun(5000);
+			System.out.println(System.currentTimeMillis()/1000L + ": Import of data done!");
 		} catch (EOFException | PcapNativeException | TimeoutException | NotOpenException e) {
 			e.printStackTrace();
 		}
 		// Done
 		odhs.close();
-		System.out.println("End of program.");
+		System.out.println(System.currentTimeMillis()/1000L + ": End of program.");
 	}
 	
 }
