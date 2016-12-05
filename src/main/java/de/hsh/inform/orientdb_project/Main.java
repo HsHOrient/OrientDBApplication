@@ -17,7 +17,7 @@ public class Main {
 	public static void main(String[] args) {
 		// TODO: Make this configurable or easy to exchange.
 		String filename = "/home/jpt/Temp/tcpdump_2";
-		OrientDbHelperService odhs = new OrientDbHelperService("127.0.0.1", "hshtest", "root", "root");
+		OrientDbHelperService odhs = new OrientDbHelperService("192.168.0.110", "hshtest", "root", "root");
 
 		// Clean up existing database and set up schema from scratch
 		odhs.cleanUpServer();

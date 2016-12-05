@@ -15,7 +15,14 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
-import de.hsh.inform.orientdb_project.model.TcpConnection;
+import de.hsh.inform.orientdb_project.model.ArpPacketModel;
+import de.hsh.inform.orientdb_project.model.EthernetFrameModel;
+import de.hsh.inform.orientdb_project.model.HostModel;
+import de.hsh.inform.orientdb_project.model.IcmpPacketModel;
+import de.hsh.inform.orientdb_project.model.Ipv4PacketModel;
+import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
+import de.hsh.inform.orientdb_project.model.TcpPacketModel;
+import de.hsh.inform.orientdb_project.model.UdpPacketModel;
 import de.hsh.inform.orientdb_project.netdata.AbstractNetdataImportService;
 
 public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNetdataImportService {
@@ -26,53 +33,58 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	private HashMap<String, Vertex> knownHosts;
 	
 	// To keep track of tcp connections
-	private HashMap<String, LinkedList<TcpConnection>> knownTcpConnections;
+	private HashMap<String, LinkedList<TcpConnectionModel>> knownTcpConnections;
 	
-	private Vertex ethernetFrame;
-	private Vertex arpPacket;
-	private Vertex ipPacket;
-	private Vertex udpPacket;
-	private Vertex tcpPacket;
-	private Vertex icmpPacket;
+	// References to already created model instances (these are reseted before processing a new ethernetFrame)
+	private EthernetFrameModel ethernetFrameModel;
+	private ArpPacketModel arpPacketModel;
+	private Ipv4PacketModel ipv4PacketModel;
+	private TcpPacketModel tcpPacketModel;
+	private UdpPacketModel udpPacketModel;
+	private IcmpPacketModel icmpPacketModel;
+
+	// References to already created vertices (these are reseted before processing a new ethernetFrame)
+	private Vertex ethernetFrameVertex;
+	private Vertex arpPacketVertex;
+	private Vertex ipPacketVertex;
+	private Vertex udpPacketVertex;
+	private Vertex tcpPacketVertex;
+	private Vertex icmpPacketVertex;
 	
 	public HighPerformanceKappaOrientDbNetdataImportService(String filename, OrientGraphNoTx orientGraph) {
 		super(filename);
 		this.og = orientGraph;
 		this.knownHosts = new HashMap<String, Vertex>();
-		this.knownTcpConnections = new HashMap<String, LinkedList<TcpConnection>>();
+		this.knownTcpConnections = new HashMap<String, LinkedList<TcpConnectionModel>>();
 	}
 	
 	public void handleEthernetPacket(EthernetPacket ether, long ts, int ms) {
 		// Clean up state vars before processing the next ethernet frame
-		this.ethernetFrame = null;
-		this.arpPacket = null;
-		this.ipPacket = null;
-		this.udpPacket = null;
-		this.tcpPacket = null;
-		this.icmpPacket = null;
+		this.ethernetFrameVertex = null;
+		this.arpPacketVertex = null;
+		this.ipPacketVertex = null;
+		this.udpPacketVertex = null;
+		this.tcpPacketVertex = null;
+		this.icmpPacketVertex = null;
+		// Also clean model instances
+		this.ethernetFrameModel = null;
+		this.arpPacketModel = null;
+		this.ipv4PacketModel = null;
+		this.tcpPacketModel = null;
+		this.udpPacketModel = null;
+		this.icmpPacketModel = null;
 		// Okay, let's go!
-		Object[] arguments = {
-			"sourceMac", ether.getHeader().getSrcAddr().toString(),
-			"targetMac", ether.getHeader().getDstAddr().toString(),
-		    "rawData", ether.getRawData(),
-		    "size", ether.getRawData().length,
-		    "payloadSize", ether.getRawData().length - ether.getHeader().length(),
-		    "timestamp", ts,
-		    "microseconds", ms,
-		};
-		this.ethernetFrame = this.og.addVertex("class:EthernetFrame", arguments);
+		this.ethernetFrameModel = new EthernetFrameModel(ether, ts, ms);
+		this.ethernetFrameVertex = this.og.addVertex("class:EthernetFrame", this.ethernetFrameModel.getArguments());
 		super.handleEthernetPacket(ether, ts, ms);
 	}
 	
 	public void handleArpPacket(ArpPacket arp, long ts, int ms) {
-		Object[] arguments = {
-			"size", arp.getRawData().length,
-			"payloadSize", arp.getRawData().length - arp.getHeader().length(),
-		};
-		this.arpPacket = this.og.addVertex("class:ArpPacket", arguments);
+		this.arpPacketModel = new ArpPacketModel(arp, ts, ms);
+		this.arpPacketVertex = this.og.addVertex("class:ArpPacket", this.arpPacketModel.getArguments());
 		// Wire up to its ethernet frame
-		Edge containsEdge = this.og.addEdge("class:contains", this.ethernetFrame, this.arpPacket, "contains");
-		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.arpPacket, this.ethernetFrame, "isContainedIn");
+		Edge containsEdge = this.og.addEdge("class:contains", this.ethernetFrameVertex, this.arpPacketVertex, "contains");
+		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.arpPacketVertex, this.ethernetFrameVertex, "isContainedIn");
 	}
 	
 	public void handleIpV4Packet(IpV4Packet ipv4, long ts, int ms) {
@@ -81,51 +93,36 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 		// Add hosts to database if new
 		this.addHostIfNew(sourceIp);
 		this.addHostIfNew(targetIp);
-		Object[] arguments = {
-			"sourceIp", sourceIp.toString().split("/")[1],
-			"targetIp", targetIp.toString().split("/")[1],
-			"size", ipv4.getRawData().length,
-			"payloadSize", ipv4.getRawData().length - ipv4.getHeader().length(),
-		};
-		this.ipPacket = this.og.addVertex("class:IpPacket", arguments);
+		this.ipv4PacketModel = new Ipv4PacketModel(ipv4, sourceIp, targetIp, ts, ms);
+		this.ipPacketVertex = this.og.addVertex("class:IpPacket", this.ipv4PacketModel.getArguments());
 		// Wire up to its ethernet frame
-		Edge containsEdge = this.og.addEdge("class:contains", this.ethernetFrame, this.ipPacket, "contains");
-		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.ipPacket, this.ethernetFrame, "isContainedIn");
+		Edge containsEdge = this.og.addEdge("class:contains", this.ethernetFrameVertex, this.ipPacketVertex, "contains");
+		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.ipPacketVertex, this.ethernetFrameVertex, "isContainedIn");
 		super.handleIpV4Packet(ipv4, ts, ms);
 	}
 	
 	public void handleUdpPacket(UdpPacket udp, long ts, int ms) {
-		Object[] arguments = {
-			"sourcePort", udp.getHeader().getSrcPort().valueAsInt(),
-			"targetPort", udp.getHeader().getDstPort().valueAsInt(),
-			"size", udp.getRawData().length,
-			"payloadSize", udp.getRawData().length - udp.getHeader().length(),
-		};
-		this.udpPacket = this.og.addVertex("class:UdpPacket");
+		this.udpPacketModel = new UdpPacketModel(udp, ts, ms);
+		this.udpPacketVertex = this.og.addVertex("class:UdpPacket", this.udpPacketModel.getArguments());
 		// Wire up to its ip packet
-		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacket, this.udpPacket, "contains");
-		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.udpPacket, this.ipPacket, "isContainedIn");
+		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacketVertex, this.udpPacketVertex, "contains");
+		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.udpPacketVertex, this.ipPacketVertex, "isContainedIn");
 	}
 	
 	public void handleTcpPacket(TcpPacket tcp, long ts, int ms) {
-		Object[] arguments = {
-			"sourcePort", tcp.getHeader().getSrcPort().valueAsInt(),
-			"targetPort", tcp.getHeader().getDstPort().valueAsInt(),
-			"size", tcp.getRawData().length,
-			"payloadSize", tcp.getRawData().length - tcp.getHeader().length(),
-		};
-		this.tcpPacket = this.og.addVertex("class:TcpPacket", arguments);
+		this.tcpPacketModel = new TcpPacketModel(tcp, ts, ms);
+		this.tcpPacketVertex = this.og.addVertex("class:TcpPacket", this.tcpPacketModel.getArguments());
 		// Wire up to its ip packet
-		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacket, this.tcpPacket, "contains");
-		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.tcpPacket, this.ipPacket, "isContainedIn");
+		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacketVertex, this.tcpPacketVertex, "contains");
+		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.tcpPacketVertex, this.ipPacketVertex, "isContainedIn");
 		// Track tcp connections
-		TcpConnection tcpConnection = this.getTcpConnectionFor(tcp);
+		TcpConnectionModel tcpConnection = this.getTcpConnectionFor(tcp);
 		// If connection exists ...
 		if(tcpConnection != null) {
 			// ... and still "up to date" aka time difference < 2s
 			if(ts - tcpConnection.endTs < 2) {
 				// Update tcpConnection data
-				if(tcpConnection.sourceIp.equals(this.ipPacket.getProperty("sourceIp"))) {
+				if(tcpConnection.sourceIp.equals(this.ipPacketVertex.getProperty("sourceIp"))) {
 					// SourceIp -> TargetIp
 					tcpConnection.addVolumeSourceToTarget(tcp.getRawData().length - tcp.getHeader().length());
 				} else {
@@ -136,24 +133,21 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 			}
 		} else {
 			// Else create a new one and add it to the list.
-			String sourceIp = this.ipPacket.getProperty("sourceIp");
-			String targetIp = this.ipPacket.getProperty("targetIp");
-			tcpConnection = new TcpConnection(tcp, sourceIp, targetIp, ts, ms);
+			String sourceIp = this.ipPacketVertex.getProperty("sourceIp");
+			String targetIp = this.ipPacketVertex.getProperty("targetIp");
+			tcpConnection = new TcpConnectionModel(tcp, sourceIp, targetIp, ts, ms);
 			this.addKnownTcpConnectionFor(tcpConnection, tcp);
 		}
 		// Remember tcpPacketVertex in tcpConnection for later edges
-		tcpConnection.addKnownTcpPacketVertex(this.tcpPacket);
+		tcpConnection.addKnownTcpPacketVertex(this.tcpPacketVertex);
 	}
 	
 	public void handleIcmpPacket(IcmpV4CommonPacket icmp, long ts, int ms) {
-		Object[] arguments = {
-			"size", icmp.getRawData().length,
-			"payloadSize", icmp.getRawData().length - icmp.getHeader().length(),
-		};
-		this.icmpPacket = this.og.addVertex("class:IcmpPacket");
+		this.icmpPacketModel = new IcmpPacketModel(icmp, ts, ms);
+		this.icmpPacketVertex = this.og.addVertex("class:IcmpPacket", this.icmpPacketModel.getArguments());
 		// Wire up to its ip packet
-		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacket, this.icmpPacket, "contains");
-		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.icmpPacket, this.ipPacket, "isContainedIn");
+		Edge containsEdge = this.og.addEdge("class:contains", this.ipPacketVertex, this.icmpPacketVertex, "contains");
+		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.icmpPacketVertex, this.ipPacketVertex, "isContainedIn");
 	}
 	
 	private void addHostIfNew(Inet4Address ipAddress) {
@@ -165,11 +159,8 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 			boolean isInternal = ipAddress.isSiteLocalAddress(); // TODO: VERIFY IF THIS IS CORRECT!
 			// Create Vertex and add to HashMap
 			String ipAddressStr = ipAddress.toString().split("/")[1];
-			Object[] arguments = {
-				"ipAddress", ipAddressStr,
-				"internal", isInternal,
-			};
-			Vertex host = this.og.addVertex("class:Host", arguments);
+			HostModel hostModel = new HostModel(ipAddressStr, isInternal);
+			Vertex host = this.og.addVertex("class:Host", hostModel.getArguments());
 			this.knownHosts.put(ipAddressStr, host);
 		}
 	}
@@ -186,18 +177,18 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 		}
 	}
 	
-	private TcpConnection getTcpConnectionFor(TcpPacket tcp) {
+	private TcpConnectionModel getTcpConnectionFor(TcpPacket tcp) {
 		String source = "";
 		String target = "";
-		String sourceIp = this.ipPacket.getProperty("sourceIp");
-		String targetIp = this.ipPacket.getProperty("targetIp");
+		String sourceIp = this.ipPacketVertex.getProperty("sourceIp");
+		String targetIp = this.ipPacketVertex.getProperty("targetIp");
 		String sourcePort = tcp.getHeader().getSrcPort().valueAsString();
 		String targetPort = tcp.getHeader().getDstPort().valueAsString();
 		source = sourceIp + ":" + sourcePort;
 		target = targetIp + ":" + targetPort;
 		String connectionKey = this.buildConnectionKey(source, target);
-		TcpConnection tcpConnection = null;
-		LinkedList<TcpConnection> connectionList = null;
+		TcpConnectionModel tcpConnection = null;
+		LinkedList<TcpConnectionModel> connectionList = null;
 		// Get or create tcp connection list for connection key
 		if(this.knownTcpConnections.containsKey(connectionKey)) {
 			connectionList = this.knownTcpConnections.get(connectionKey);
@@ -210,21 +201,21 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 		return tcpConnection;
 	}
 	
-	private void addKnownTcpConnectionFor(TcpConnection tcpConnection, TcpPacket tcp) {
+	private void addKnownTcpConnectionFor(TcpConnectionModel tcpConnection, TcpPacket tcp) {
 		String source = "";
 		String target = "";
-		String sourceIp = this.ipPacket.getProperty("sourceIp");
-		String targetIp = this.ipPacket.getProperty("targetIp");
+		String sourceIp = this.ipPacketVertex.getProperty("sourceIp");
+		String targetIp = this.ipPacketVertex.getProperty("targetIp");
 		String sourcePort = tcp.getHeader().getSrcPort().valueAsString();
 		String targetPort = tcp.getHeader().getDstPort().valueAsString();
 		source = sourceIp + ":" + sourcePort;
 		target = targetIp + ":" + targetPort;
 		String connectionKey = this.buildConnectionKey(source, target);
-		LinkedList<TcpConnection> connectionList = null;
+		LinkedList<TcpConnectionModel> connectionList = null;
 		if(this.knownTcpConnections.containsKey(connectionKey)) {
 			connectionList = this.knownTcpConnections.get(connectionKey);
 		} else {
-			connectionList = new LinkedList<TcpConnection>();
+			connectionList = new LinkedList<TcpConnectionModel>();
 			this.knownTcpConnections.put(connectionKey, connectionList);
 		}
 		// Put connection into list of known tcp connections
@@ -234,8 +225,8 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	public void afterImport() {
 		// TODO: Link TcpConnections up with their tcpPackets!
 		System.out.println("All done. Processing collected TcpConnections ...");
-		for(LinkedList<TcpConnection> connList : this.knownTcpConnections.values()) {
-			for(TcpConnection conn : connList) {
+		for(LinkedList<TcpConnectionModel> connList : this.knownTcpConnections.values()) {
+			for(TcpConnectionModel conn : connList) {
 				Vertex currentTcpConnection = this.og.addVertex("class:TcpConnection", conn.getArguments());
 				// Look up already created source and target host vertices
 				Vertex sourceHost = this.knownHosts.get(conn.sourceIp);

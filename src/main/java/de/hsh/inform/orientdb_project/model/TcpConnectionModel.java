@@ -4,10 +4,13 @@ import java.util.LinkedList;
 
 import org.pcap4j.packet.TcpPacket;
 
+import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 
-public class TcpConnection {
+public class TcpConnectionModel {
 	
 	public long startTs;
 	public int startMs;
@@ -26,8 +29,27 @@ public class TcpConnection {
 
 	public LinkedList<Vertex> knownTcpPacketVertices;
 	
+	/*
+	 * Static helper method to create type for itself in OrientDb
+	 * Check this.getArguments() to ensure completeness.
+	 */
+	public static void createType(OrientGraphNoTx og) {
+		OrientVertexType tcpConnectionType = og.createVertexType("TcpConnection", "V");
+		tcpConnectionType.createProperty("startTs", OType.LONG);
+		tcpConnectionType.createProperty("startMs", OType.INTEGER);
+		tcpConnectionType.createProperty("endTs", OType.LONG);
+		tcpConnectionType.createProperty("endMs", OType.INTEGER);
+		tcpConnectionType.createProperty("sourceIp", OType.STRING);
+		tcpConnectionType.createProperty("sourcePort", OType.INTEGER);
+		tcpConnectionType.createProperty("targetIp", OType.STRING);
+		tcpConnectionType.createProperty("targetPort", OType.INTEGER);
+		tcpConnectionType.createProperty("volumeSourceToTarget", OType.LONG);
+		tcpConnectionType.createProperty("volumeTargetToSource", OType.LONG);
+		tcpConnectionType.createProperty("totalVolume", OType.LONG);
+	}
 	
-	public TcpConnection(TcpPacket tcp, String sourceIp, String targetIp, long ts, int ms) {
+	
+	public TcpConnectionModel(TcpPacket tcp, String sourceIp, String targetIp, long ts, int ms) {
 		this.setStart(ts, ms);
 		this.setEnd(ts, ms);
 		this.sourceIp = sourceIp;

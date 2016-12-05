@@ -3,7 +3,6 @@ package de.hsh.inform.orientdb_project.orientdb;
 import java.io.IOException;
 
 import com.orientechnologies.orient.client.remote.OServerAdmin;
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientConfigurableGraph.THREAD_MODE;
@@ -11,6 +10,15 @@ import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
+
+import de.hsh.inform.orientdb_project.model.ArpPacketModel;
+import de.hsh.inform.orientdb_project.model.EthernetFrameModel;
+import de.hsh.inform.orientdb_project.model.HostModel;
+import de.hsh.inform.orientdb_project.model.IcmpPacketModel;
+import de.hsh.inform.orientdb_project.model.Ipv4PacketModel;
+import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
+import de.hsh.inform.orientdb_project.model.TcpPacketModel;
+import de.hsh.inform.orientdb_project.model.UdpPacketModel;
 
 public class OrientDbHelperService {
 
@@ -115,59 +123,19 @@ public class OrientDbHelperService {
 	private void createClasses() {
 		OrientGraphNoTx og = this.getOrientGraphFactory().getNoTx();
 		
-		OrientVertexType ethernetFrameType = og.createVertexType("EthernetFrame", "V");
-		ethernetFrameType.createProperty("sourceMac", OType.STRING);
-		ethernetFrameType.createProperty("targetMac", OType.STRING);
-		ethernetFrameType.createProperty("rawData", OType.BINARY);
-		ethernetFrameType.createProperty("size", OType.INTEGER);
-		ethernetFrameType.createProperty("payloadSize", OType.INTEGER);
-		ethernetFrameType.createProperty("timestamp", OType.LONG);
-		ethernetFrameType.createProperty("microseconds", OType.INTEGER);
+		// Use methods integrated into the models to create their classes
+		// These are the vertex types used in our model
+		EthernetFrameModel.createType(og);
+		ArpPacketModel.createType(og);
+		Ipv4PacketModel.createType(og);
+		UdpPacketModel.createType(og);
+		TcpPacketModel.createType(og);
+		IcmpPacketModel.createType(og);
 
-		OrientVertexType arpPacketType = og.createVertexType("ArpPacket", "V");
-		// TODO: Not finished!
-		arpPacketType.createProperty("askedForIp", OType.STRING);
-		arpPacketType.createProperty("hasIp", OType.STRING);
-		arpPacketType.createProperty("size", OType.INTEGER);
-		arpPacketType.createProperty("payloadSize", OType.INTEGER);
+		HostModel.createType(og);	
+		TcpConnectionModel.createType(og);
 		
-		OrientVertexType ipPacketType = og.createVertexType("IpPacket", "V");
-		ipPacketType.createProperty("sourceIp", OType.STRING);
-		ipPacketType.createProperty("targetIp", OType.STRING);
-		ipPacketType.createProperty("size", OType.INTEGER);
-		ipPacketType.createProperty("payloadSize", OType.INTEGER);
-		
-		OrientVertexType udpPacketType = og.createVertexType("UdpPacket", "V");
-		udpPacketType.createProperty("sourcePort", OType.INTEGER);
-		udpPacketType.createProperty("targetPort", OType.INTEGER);
-		udpPacketType.createProperty("size", OType.INTEGER);
-		udpPacketType.createProperty("payloadSize", OType.INTEGER);
-		
-		OrientVertexType tcpPacketType = og.createVertexType("TcpPacket", "V");
-		tcpPacketType.createProperty("sourcePort", OType.INTEGER);
-		tcpPacketType.createProperty("targetPort", OType.INTEGER);
-		tcpPacketType.createProperty("size", OType.INTEGER);
-		tcpPacketType.createProperty("payloadSize", OType.INTEGER);
-
-		OrientVertexType icmpPacketType = og.createVertexType("IcmpPacket", "V");
-		icmpPacketType.createProperty("size", OType.INTEGER);
-		icmpPacketType.createProperty("payloadSize", OType.INTEGER);
-		
-		OrientVertexType hostType = og.createVertexType("Host", "V");
-		hostType.createProperty("ipAddress", OType.STRING);
-		hostType.createProperty("internal", OType.BOOLEAN);
-		
-		OrientVertexType tcpConnectionType = og.createVertexType("TcpConnection", "V");
-		tcpConnectionType.createProperty("startTs", OType.LONG);
-		tcpConnectionType.createProperty("startMs", OType.INTEGER);
-		tcpConnectionType.createProperty("endTs", OType.LONG);
-		tcpConnectionType.createProperty("endMs", OType.INTEGER);
-		tcpConnectionType.createProperty("sourcePort", OType.INTEGER);
-		tcpConnectionType.createProperty("targetPort", OType.INTEGER);
-		tcpConnectionType.createProperty("volumeSourceToTarget", OType.LONG);
-		tcpConnectionType.createProperty("volumeTargetToSource", OType.LONG);
-		tcpConnectionType.createProperty("totalVolume", OType.LONG);
-		
+		// Edges do not really need their own model (yet), they connect the vertex types
 		OrientEdgeType isContainedInType = og.createEdgeType("isContainedIn", "E");
 		isContainedInType.setDescription("isContainedIn");
 		OrientEdgeType containsType = og.createEdgeType("contains", "E");
@@ -189,6 +157,7 @@ public class OrientDbHelperService {
 		OrientEdgeType hasRelatedTcpPacketType = og.createEdgeType("hasRelatedTcpPacket", "E");
 		hasRelatedTcpPacketType.setDescription("hasRelatedTcpPacket");
 		
+		// We're done creating classes and types, shut down the database graph.
 		og.shutdown();
 	}
 
