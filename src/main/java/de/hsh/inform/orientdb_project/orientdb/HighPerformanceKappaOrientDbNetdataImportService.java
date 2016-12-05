@@ -117,17 +117,14 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 		Edge isContainedInEdge = this.og.addEdge("class:isContainedIn", this.tcpPacketVertex, this.ipPacketVertex, "isContainedIn");
 		// Track tcp connections
 		TcpConnectionModel tcpConnection = this.getTcpConnectionFor(tcp);
-		// If connection exists ...
-		if(tcpConnection != null) {
-			// ... and still "up to date" aka time difference < 2s
-			if(ts - tcpConnection.endTs < 2) {
-				// Update tcpConnection data
-				if(tcpConnection.sourceIp.equals(this.ipPacketVertex.getProperty("sourceIp"))) {
-					// SourceIp -> TargetIp
-					tcpConnection.addVolumeSourceToTarget(tcp.getRawData().length - tcp.getHeader().length());
+		if(tcpConnection != null) { // If connection exists ...
+			if(ts - tcpConnection.endTs < 2) { // ... and still "up to date" aka time difference < 2s
+				if(tcpConnection.sourceIp.equals(this.ipv4PacketModel.sourceIp)) {
+					// Update connection data in direction SourceIp -> TargetIp
+					tcpConnection.addVolumeSourceToTarget(this.tcpPacketModel.payloadSize);
 				} else {
-					// TargetIp -> SourceIp
-					tcpConnection.addVolumeTargetToSource(tcp.getRawData().length - tcp.getHeader().length());
+					// Update connection data in direction TargetIp -> SourceIp
+					tcpConnection.addVolumeTargetToSource(this.tcpPacketModel.payloadSize);
 				}
 				tcpConnection.setEnd(ts, ms);
 			}
@@ -152,8 +149,7 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	
 	private void addHostIfNew(Inet4Address ipAddress) {
 		if(this.knownHosts.containsKey(ipAddress)) {
-			// Host already known, nothing to do!
-			return;
+			return; // Host already known, nothing to do!
 		} else {
 			// Check internal/external by IP
 			boolean isInternal = ipAddress.isSiteLocalAddress(); // TODO: VERIFY IF THIS IS CORRECT!
@@ -223,7 +219,6 @@ public class HighPerformanceKappaOrientDbNetdataImportService extends AbstractNe
 	}
 	
 	public void afterImport() {
-		// TODO: Link TcpConnections up with their tcpPackets!
 		System.out.println("All done. Processing collected TcpConnections ...");
 		for(LinkedList<TcpConnectionModel> connList : this.knownTcpConnections.values()) {
 			for(TcpConnectionModel conn : connList) {
