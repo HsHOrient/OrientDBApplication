@@ -34,7 +34,11 @@ public class Main {
 		// Go go gadget import service!
 		try {
 			System.out.println(System.currentTimeMillis()/1000L + ": Begin import of data ...");
-			importService.partialRun(5000);
+			if(config.limitedImport) {
+				importService.partialRun(config.importLimit);
+			} else {
+				importService.run();
+			}
 			System.out.println(System.currentTimeMillis()/1000L + ": Import of data done!");
 		} catch (EOFException | PcapNativeException | TimeoutException | NotOpenException e) {
 			e.printStackTrace();
