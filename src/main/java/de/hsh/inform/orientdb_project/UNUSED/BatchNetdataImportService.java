@@ -40,6 +40,7 @@ public class BatchNetdataImportService extends AbstractNetdataImportService {
 
 	@Override
 	public void afterImport() {
+		/*
 		OGraphBatchInsert batch = new OGraphBatchInsert("plocal:your/db", "admin", "admin");
 		//phase 1: begin
 		batch.begin();
@@ -62,6 +63,7 @@ public class BatchNetdataImportService extends AbstractNetdataImportService {
 		// is equivalent to (but less performing than)
 		batch.createEdge(0L, 1L, props);
 		//batch.createVertex(Long) is needed only if you want to create unconnected vertices
+		*/
 	}
 
 }
