@@ -146,13 +146,13 @@ public class NodeBasedImportService extends AbstractNetdataImportService {
 	}
 	
 	private void addHostIfNew(Inet4Address ipAddress) {
-		if(this.knownHosts.containsKey(ipAddress)) {
+		String ipAddressStr = ipAddress.toString().split("/")[1];
+		if(this.knownHosts.containsKey(ipAddressStr)) {
 			return; // Host already known, nothing to do!
 		} else {
 			// Check internal/external by IP
 			boolean isInternal = ipAddress.isSiteLocalAddress(); // TODO: VERIFY IF THIS IS CORRECT!
 			// Create Vertex and add to HashMap
-			String ipAddressStr = ipAddress.toString().split("/")[1];
 			HostModel hostModel = new HostModel(ipAddressStr, isInternal);
 			Vertex host = this.og.addVertex("class:Host", hostModel.getArguments());
 			this.knownHosts.put(ipAddressStr, host);

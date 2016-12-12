@@ -3,6 +3,7 @@ package de.hsh.inform.orientdb_project.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -18,10 +19,13 @@ public class HostRepository {
 	}
 	
 	public List<HostModel> findByConnectionsTo(String ipAddress, int port) {
-		GraphQuery gq = this.ogf.query();
-		gq = gq.has("@class", "Host");
-		// TODO
-		return this.getListFromVertices(gq.vertices());
+		String sql = "" +
+		"SELECT EXPAND(out('isTargetHostFor')[targetPort=" + port + "].out('hasSourceHost')) " +
+		"FROM Host WHERE ipAddress = '" + ipAddress + "';";
+		
+		@SuppressWarnings("unchecked") // We know.
+		Iterable<Vertex> vertices = (Iterable<Vertex>) this.ogf.command(new OCommandSQL(sql)).execute();
+		return this.getListFromVertices(vertices);
 	}
 
 	public List<HostModel> findAllByConnectionsToOutsideHosts() {

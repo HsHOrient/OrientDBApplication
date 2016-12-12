@@ -37,5 +37,14 @@ public class HostModel {
 		};
 		return arguments;
 	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder("[Host ipAddress=");
+		sb.append(this.ipAddress);
+		sb.append(", internal=");
+		sb.append(this.internal);
+		sb.append("]");
+		return sb.toString();
+	}
 
 }
