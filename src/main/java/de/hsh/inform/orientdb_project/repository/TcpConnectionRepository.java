@@ -3,8 +3,9 @@ package de.hsh.inform.orientdb_project.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.orientechnologies.orient.core.command.OCommandRequest;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.GraphQuery;
-import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
@@ -19,6 +20,7 @@ public class TcpConnectionRepository {
 	}
 	
 	public List<TcpConnectionModel> findByActiveWhen(long ts) {
+		/*
 		GraphQuery gq = this.ogf.query();
 		gq = gq.has("@class", "TcpConnection");
 		
@@ -36,7 +38,12 @@ public class TcpConnectionRepository {
 			}
 		}, ts);
 
-		return this.getListFromVertices(gq.vertices());
+		return this.getListFromVertices(gq.vertices());*/
+		
+		String sql = "SELECT FROM TcpConnection WHERE startTs <= " + ts + " AND endTs >= " + ts + "";
+		@SuppressWarnings("unchecked") // We know.
+		Iterable<Vertex> vertices = (Iterable<Vertex>) this.ogf.command(new OCommandSQL(sql)).execute();
+		return this.getListFromVertices(vertices);
 	}
 	
 	public List<TcpConnectionModel> getTotalDataVolumeBetweenHosts(String ipA, String ipB) {

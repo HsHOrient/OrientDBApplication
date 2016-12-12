@@ -1,7 +1,10 @@
 package de.hsh.inform.orientdb_project;
 
+import java.util.List;
+
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
+import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
 import de.hsh.inform.orientdb_project.orientdb.OrientDbHelperService;
 import de.hsh.inform.orientdb_project.repository.TcpConnectionRepository;
 import de.hsh.inform.orientdb_project.util.ConfigPropertiesReader;
@@ -18,7 +21,10 @@ public class Main {
 		OrientGraphNoTx ogf = odhs.getOrientGraphNoTx();
 		
 		TcpConnectionRepository tcr = new TcpConnectionRepository(ogf);
-		tcr.findByActiveWhen(901713642);
+		List<TcpConnectionModel> result = tcr.findByActiveWhen(901713642);
+		for(TcpConnectionModel m : result) {
+			System.out.println(m.toString());
+		}
 
 		// Done
 		odhs.close();
