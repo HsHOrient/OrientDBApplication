@@ -1,5 +1,7 @@
 package de.hsh.inform.orientdb_project.repository;
 
+import java.util.List;
+
 import com.tinkerpop.blueprints.GraphQuery;
 import com.tinkerpop.blueprints.Predicate;
 import com.tinkerpop.blueprints.Vertex;
@@ -15,7 +17,7 @@ public class TcpConnectionRepository {
 		this.ogf = ogf;
 	}
 	
-	public Object findByActiveWhen(long ts) {
+	public List<TcpConnectionModel> findByActiveWhen(long ts) {
 		GraphQuery gq = this.ogf.query();
 		gq = gq.has("@class", "TcpConnection");
 		
@@ -42,6 +44,11 @@ public class TcpConnectionRepository {
 		}
 		System.out.println("----");
 		return null;
-	} 
+	}
+	
+	public List<TcpConnectionModel> getTotalDataVolumeBetweenHosts(String ipA, String ipB) {
+		// TODO!
+		return null;
+	}
 	
 }
