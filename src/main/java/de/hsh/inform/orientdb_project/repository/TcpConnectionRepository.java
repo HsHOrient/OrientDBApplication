@@ -1,5 +1,6 @@
 package de.hsh.inform.orientdb_project.repository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tinkerpop.blueprints.GraphQuery;
@@ -34,21 +35,23 @@ public class TcpConnectionRepository {
 				return (Long) seen >= (Long) given;
 			}
 		}, ts);
-		
-		System.out.println("Ergebnisse:");
-		for(Vertex v : gq.vertices()) {
-			for(String key : v.getPropertyKeys()) {
-				System.out.print(key + ": " + v.getProperty(key) + ", ");
-			}
-			System.out.println();
-		}
-		System.out.println("----");
-		return null;
+
+		return this.getListFromVertices(gq.vertices());
 	}
 	
 	public List<TcpConnectionModel> getTotalDataVolumeBetweenHosts(String ipA, String ipB) {
-		// TODO!
-		return null;
+		GraphQuery gq = this.ogf.query();
+		gq = gq.has("@class", "TcpConnection");
+		// TODO
+		return this.getListFromVertices(gq.vertices());
+	}
+	
+	private List<TcpConnectionModel> getListFromVertices(Iterable<Vertex> vertices) {
+		List<TcpConnectionModel> result = new ArrayList<TcpConnectionModel>();
+		for(Vertex v : vertices) {
+			result.add(new TcpConnectionModel(v));
+		}
+		return result;
 	}
 	
 }

@@ -60,7 +60,16 @@ public class TcpConnectionModel {
 	}
 
 	public TcpConnectionModel(Vertex v) {
-		// TODO!
+		this.startTs = v.getProperty("startTs");
+		this.startMs = v.getProperty("startMs");
+		this.endTs = v.getProperty("endTs");
+		this.endMs = v.getProperty("endMs");
+		this.sourceIp = v.getProperty("sourceIp");
+		this.sourcePort = v.getProperty("sourcePort");
+		this.targetIp = v.getProperty("targetIp");
+		this.targetPort = v.getProperty("targetPort");
+		this.volumeSourceToTarget = v.getProperty("volumeSourceToTarget");
+		this.volumeTargetToSource = v.getProperty("volumeTargetToSource");
 	}
 
 

@@ -1,6 +1,7 @@
 package de.hsh.inform.orientdb_project.model;
 
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
@@ -24,6 +25,11 @@ public class HostModel {
 		this.internal = internal;
 	}
 	
+	public HostModel(Vertex v) {
+		this.internal = v.getProperty("internal");
+		this.ipAddress = v.getProperty("ipAddress");
+	}
+
 	public Object[] getArguments() {
 		Object[] arguments = {
 				"ipAddress", this.ipAddress,
