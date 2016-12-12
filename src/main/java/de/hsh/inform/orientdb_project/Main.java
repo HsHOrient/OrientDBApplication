@@ -25,6 +25,9 @@ public class Main {
 		for(TcpConnectionModel m : result) {
 			System.out.println(m.toString());
 		}
+		
+		long r = tcr.getTotalDataVolumePerMinuteBetweenHosts("172.16.114.207", "206.251.19.72");
+		System.out.println("Bytes per Second: " + r);
 
 		// Done
 		odhs.close();

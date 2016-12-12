@@ -101,6 +101,10 @@ public class TcpConnectionModel {
 		sb.append(this.startTs);
 		sb.append(".");
 		sb.append(this.startMs);
+		sb.append("->");
+		sb.append(this.endTs);
+		sb.append(".");
+		sb.append(this.endMs);
 		sb.append("] ");
 		sb.append(this.sourceIp);
 		sb.append(":");
