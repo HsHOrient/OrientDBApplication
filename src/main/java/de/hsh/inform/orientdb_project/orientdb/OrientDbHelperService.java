@@ -1,6 +1,7 @@
 package de.hsh.inform.orientdb_project.orientdb;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.orientechnologies.orient.client.remote.OServerAdmin;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
@@ -17,6 +18,7 @@ import de.hsh.inform.orientdb_project.model.IpPacketModel;
 import de.hsh.inform.orientdb_project.model.TcpConnectionModel;
 import de.hsh.inform.orientdb_project.model.TcpPacketModel;
 import de.hsh.inform.orientdb_project.model.UdpPacketModel;
+import de.hsh.inform.orientdb_project.model.WellKnownPortModel;
 
 public class OrientDbHelperService {
 
@@ -102,6 +104,17 @@ public class OrientDbHelperService {
 	public void setupSchema() {
 		this.createClasses();
 		this.createClusters();
+		this.importStaticData();
+	}
+
+	private void importStaticData() {
+		int[] ports = {22, 25, 53, 80, 443};
+		String[] descriptions = {"SSH", "SMTP", "DNS", "HTTP", "HTTPS"};
+		OrientGraphNoTx og = this.getOrientGraphFactory().getNoTx();
+		for(int i = 0; i < ports.length; i++) {
+			WellKnownPortModel m = new WellKnownPortModel(ports[i], descriptions[i]);
+			og.addVertex("class:WellKnownPort", m.getArguments());
+		}
 	}
 
 	private void createClusters() {
@@ -132,6 +145,7 @@ public class OrientDbHelperService {
 
 		HostModel.createType(og);	
 		TcpConnectionModel.createType(og);
+		WellKnownPortModel.createType(og);
 		
 		// Edges do not really need their own model (yet), they connect the vertex types
 		OrientEdgeType isContainedInType = og.createEdgeType("isContainedIn", "E");
