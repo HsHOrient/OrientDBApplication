@@ -59,6 +59,11 @@ public class TcpConnectionModel {
 		this.knownTcpPacketVertices = new LinkedList<Vertex>();
 	}
 
+	public TcpConnectionModel(Vertex v) {
+		// TODO!
+	}
+
+
 	public void setStart(long ts, int ms) {
 		this.startTs = ts;
 		this.startMs = ms;

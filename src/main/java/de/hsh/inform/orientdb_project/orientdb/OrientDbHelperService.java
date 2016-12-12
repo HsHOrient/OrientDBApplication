@@ -158,5 +158,5 @@ public class OrientDbHelperService {
 		// We're done creating classes and types, shut down the database graph.
 		og.shutdown();
 	}
-
+	
 }
