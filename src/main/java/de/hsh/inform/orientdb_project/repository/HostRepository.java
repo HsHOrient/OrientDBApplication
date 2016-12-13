@@ -29,18 +29,20 @@ public class HostRepository {
 	}
 
 	public List<HostModel> findAllByConnectionsToOutsideHosts() {
-		GraphQuery gq = this.ogf.query();
-		gq = gq.has("@class", "Host");
-		// TODO
-		return this.getListFromVertices(gq.vertices());
+		String sql = "" +
+		"SELECT EXPAND(DISTINCT(out)) FROM (SELECT out('hasSourceHost') AS out FROM TcpConnection WHERE out('hasTargetHost').internal = false);";
+		@SuppressWarnings("unchecked") // We know.
+		Iterable<Vertex> vertices = (Iterable<Vertex>) this.ogf.command(new OCommandSQL(sql)).execute();
+		return this.getListFromVertices(vertices);
 	}
 
 	
-	public List<HostModel> findByIncomingConnectionOnPort(int port) {
-		GraphQuery gq = this.ogf.query();
-		gq = gq.has("@class", "Host");
-		// TODO
-		return this.getListFromVertices(gq.vertices());
+	public List<HostModel> findAllByIncomingConnectionOnWellKnownPort() {
+		String sql = "" +
+		"SELECT EXPAND(DISTINCT(out)) FROM (SELECT out('hasTargetHost') FROM TcpConnection WHERE targetPort IN (SELECT port FROM WellKnownPort))";
+		@SuppressWarnings("unchecked") // We know.
+		Iterable<Vertex> vertices = (Iterable<Vertex>) this.ogf.command(new OCommandSQL(sql)).execute();
+		return this.getListFromVertices(vertices);
 	}
 	
 	private List<HostModel> getListFromVertices(Iterable<Vertex> vertices) {

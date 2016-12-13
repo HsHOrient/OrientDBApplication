@@ -3,6 +3,7 @@ package de.hsh.inform.orientdb_project.model;
 import org.pcap4j.packet.EthernetPacket;
 
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
@@ -47,14 +48,14 @@ public class EthernetFrameModel {
 		this.microseconds = ms;
 	}
 	
-	public EthernetFrameModel(Vertex v) {
-		this.ts = v.getProperty("timestamp");
-		this.ms = v.getProperty("microseconds");
-		this.sourceMac = v.getProperty("sourceMac");
-		this.targetMac = v.getProperty("targetMac");
-		this.rawData = v.getProperty("rawData");
-		this.size = v.getProperty("size");
-		this.payloadSize = v.getProperty("payloadSize");
+	public EthernetFrameModel(ODocument doc) {
+		this.ts = doc.field("timestamp");
+		this.ms = doc.field("microseconds");
+		this.sourceMac = doc.field("sourceMac");
+		this.targetMac = doc.field("targetMac");
+		this.rawData = doc.field("rawData");
+		this.size = doc.field("size");
+		this.payloadSize = doc.field("payloadSize");
 		this.timestamp = ts;
 		this.microseconds = ms;
 	}

@@ -1,9 +1,9 @@
 package de.hsh.inform.orientdb_project.orientdb;
 
 import java.io.IOException;
-import java.util.List;
 
 import com.orientechnologies.orient.client.remote.OServerAdmin;
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.tinkerpop.blueprints.impls.orient.OrientConfigurableGraph.THREAD_MODE;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
@@ -36,6 +36,10 @@ public class OrientDbHelperService {
 		this.user = user;
 		this.pass = pass;
 		this.factory = null;
+	}
+	
+	public ODatabaseDocumentTx getDatabaseDocument() {
+		return this.factory.getDatabase();
 	}
 	
 	
