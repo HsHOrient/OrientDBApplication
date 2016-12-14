@@ -6,7 +6,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
-public class TcpPacketModel {
+public class TcpPacketModel implements Model {
 
 	public long ts;
 	public int ms;

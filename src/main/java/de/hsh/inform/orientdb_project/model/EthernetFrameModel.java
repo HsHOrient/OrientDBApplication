@@ -8,7 +8,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
-public class EthernetFrameModel {
+public class EthernetFrameModel implements Model {
 
 	public long ts;
 	public int ms;

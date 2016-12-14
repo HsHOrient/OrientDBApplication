@@ -5,7 +5,7 @@ import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
-public class HostModel {
+public class HostModel implements Model {
 
 	public String ipAddress;
 	public boolean internal;

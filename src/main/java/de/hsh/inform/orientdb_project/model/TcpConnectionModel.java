@@ -10,7 +10,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
 
-public class TcpConnectionModel {
+public class TcpConnectionModel implements Model {
 	
 	public long startTs;
 	public int startMs;

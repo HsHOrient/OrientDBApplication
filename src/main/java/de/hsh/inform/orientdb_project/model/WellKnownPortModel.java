@@ -4,7 +4,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
-public class WellKnownPortModel {
+public class WellKnownPortModel implements Model {
 
 	public int port;
 	public String description;
