@@ -136,8 +136,9 @@ public class CommandLineInterface {
 	}
 
 	private void help() {
-		HelpFormatter formater = new HelpFormatter();
-		formater.printHelp(" ", options);
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.setWidth(120);
+		formatter.printHelp(" ", options);
 	}
 
 	public void run() {

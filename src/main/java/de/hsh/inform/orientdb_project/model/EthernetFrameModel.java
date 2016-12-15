@@ -4,7 +4,6 @@ import org.pcap4j.packet.EthernetPacket;
 
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
@@ -73,5 +72,20 @@ public class EthernetFrameModel implements Model {
 		return arguments;
 	}
 	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("EthernetFrame[");
+		sb.append(this.timestamp);
+		sb.append(".");
+		sb.append(this.microseconds);
+		sb.append("] ");
+		sb.append(this.sourceMac);
+		sb.append(" -> ");
+		sb.append(this.targetMac);
+		sb.append(" (");
+		sb.append(this.size);
+		sb.append(" bytes) ");
+		return sb.toString();
+	}
 	
 }
