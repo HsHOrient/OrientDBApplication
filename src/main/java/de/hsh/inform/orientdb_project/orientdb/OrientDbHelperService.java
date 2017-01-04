@@ -5,7 +5,9 @@ import java.io.IOException;
 import com.orientechnologies.orient.client.remote.OServerAdmin;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
+import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.impls.orient.OrientConfigurableGraph.THREAD_MODE;
+import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
@@ -107,7 +109,7 @@ public class OrientDbHelperService {
 	
 	public void setupSchema() {
 		this.createClasses();
-		this.createClusters();
+		this.createIndexes();
 		this.importStaticData();
 	}
 
@@ -121,18 +123,21 @@ public class OrientDbHelperService {
 		}
 	}
 
-	private void createClusters() {
-		OServerAdmin admin = null;
-		try {
-			admin = new OServerAdmin(getDbUri(false));
-			admin.connect(this.user, this.pass);
-			// TODO: Create clusters!
-		} catch (IOException e) {
-			System.err.println("Failed to create custom clusters!");
-			e.printStackTrace();
-		} finally {
-			admin.close();
+	private void createIndexes() {
+		OrientGraphNoTx og = this.getOrientGraphFactory().getNoTx();
+		String[] createIndexQueries = {
+			"CREATE INDEX EthernetFrameTime ON EthernetFrame (timestamp,microseconds) UNIQUE;",
+			"CREATE INDEX IpPacketPath ON IpPacket (sourceIp, targetIp) NOTUNIQUE_HASH_INDEX;",
+			"CREATE INDEX UdpPacketPath ON UdpPacket (sourcePort, targetPort) NOTUNIQUE_HASH_INDEX;",
+			"CREATE INDEX TcpPacketPath ON TcpPacket (sourcePort, targetPort) NOTUNIQUE_HASH_INDEX;",
+			"CREATE INDEX TcpConnectionTimes ON TcpConnection (startTs, startMs, endTs, endMs) UNIQUE;",
+			"CREATE INDEX Host.ipAddress UNIQUE;",
+			"CREATE INDEX WellKnownPort.port UNIQUE;"
+		};
+		for(String createIndexQuery : createIndexQueries) {
+			og.command(new OCommandSQL(createIndexQuery)).execute();
 		}
+		og.shutdown();
 	}
 	
 	private void createClasses() {
